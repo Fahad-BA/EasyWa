@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Easy WhatsApp</title>
+
+  <!-- أيقونات PWA -->
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+
+  <!-- CSS -->
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+
+  :root{
+    --bg:#0b1020;
+    --fg:#e5e7eb;
+    --muted:#94a3b8;
+    --card:#111631;
+    --accent:#22c55e;
+    --border:#1f2937;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{
+    height:100%;
+    background:var(--bg);
+    color:var(--fg);
+    font-family:"Cairo",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic",Arial;
+    font-size:16px;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    display:grid;
+    place-items:center;
+  }
+
+  #app{
+    width:100%;
+    max-width:460px;
+    padding:1rem;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:1rem;
+    padding:1.25rem;
+    box-shadow:0 6px 22px rgba(0,0,0,.35);
+  }
+  h1{text-align:center;margin-bottom:1rem;font-weight:700}
+  .label{display:block;margin:.3rem 0 .4rem;font-weight:600}
+  .input,.btn{
+    width:100%;
+    padding:.9rem;
+    border-radius:.75rem;
+    border:1px solid #334155;
+    background:#0b1020;
+    color:var(--fg);
+    transition:border-color .15s ease, box-shadow .15s ease, transform .02s ease;
+  }
+  .input{margin-bottom:.7rem}
+  .input:focus{
+    outline:0;
+    border-color:var(--accent);
+    box-shadow:0 0 0 .2rem color-mix(in oklab, var(--accent) 25%, transparent);
+  }
+  .btn{
+    cursor:pointer;
+    background:var(--accent);
+    color:#0b1020;
+    border:0;
+    font-weight:700;
+    letter-spacing:.2px;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .btn:focus-visible{
+    outline:0;
+    box-shadow:0 0 0 .2rem color-mix(in oklab, var(--accent) 35%, transparent);
+  }
+  .muted{opacity:.75;text-align:center;margin-top:.5rem}
+  </style>
+</head>
+
+<body>
+  <main id="app" role="main">
+    <section class="card">
+      <h1>EasyWa</h1>
+      <form id="waForm" autocomplete="on">
+        <label class="label" for="number">رقم الجوال</label>
+        <input class="input" id="number" name="number" inputmode="tel" required placeholder="مثال: 0551234567" />
+        <button class="btn" type="submit">ابدأ المحادثة</button>
+      </form>
+      <p id="msg" class="muted" role="status"></p>
+    </section>
+  </main>
+
+  <script>
+  (() => {
+    const form = document.getElementById('waForm');
+    const input = document.getElementById('number');
+    const msg = document.getElementById('msg');
+
+    function normalizeNumber(raw){
+      const digits = String(raw).replace(/\D+/g, '');
+      if (digits.startsWith('05')) return '966' + digits.slice(1);
+      if (digits.startsWith('5')) return '966' + digits;
+      return digits;
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const raw = input.value.trim();
+      if (!raw){ input.focus(); return; }
+      const normalized = normalizeNumber(raw);
+      if (!/^\d{8,15}$/.test(normalized)) {
+        msg.textContent = 'رقم غير صالح. تأكد أنه بين 8 و15 رقم.';
+        return;
+      }
+      msg.textContent = `فتح المحادثة: https://wa.me/${normalized}`;
+      location.href = `https://wa.me/${normalized}`;
+    });
+
+    // تسجيل Service Worker بمسار نسبي (متوافق مع GitHub Pages)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () =>
+        navigator.serviceWorker.register('./service-worker.js').catch(()=>{})
+      );
+    }
+  })();
+  </script>
+</body>
+</html>
